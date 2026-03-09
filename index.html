@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>half. Store</title>
+<style>
+body{font-family:Arial;background:#f6f4ff;margin:0;color:#222;}
+.nav{background:#6a0dad;color:white;padding:18px 40px;font-size:22px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;}
+.nav button{background:white;color:#6a0dad;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;}
+.nav button:hover{background:#e0d0ff;}
+.nav-controls{display:flex;align-items:center;gap:10px;font-size:16px;}
+.nav-search{display:flex;gap:8px;align-items:center;}
+.nav-search input{padding:6px 10px;border:none;border-radius:6px;min-width:190px;}
+.product-grid{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;padding:40px;}
+.product-card{background:white;padding:20px;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.1);text-align:center;}
+.product-card img{width:200px;height:200px;object-fit:cover;border-radius:10px;}
+.product-card a{text-decoration:none;color:#222;font-weight:bold;display:block;margin-top:10px;}
+.product-card a:hover{color:#6a0dad;}
+</style>
+</head>
+<body>
+<div class="nav">
+half.
+<div class="nav-controls">
+  <div class="nav-search">
+    <input id="searchInput" type="text" placeholder="Search products">
+    <button id="searchBtn">Search</button>
+  </div>
+  🛒 Cart: <span id="cartCount">0</span>
+  <button id="signOutBtn" style="display:none;">Sign Out</button>
+</div>
+</div>
+
+<h2 style="text-align:center;margin-top:40px;">Our Products</h2>
+<div class="product-grid">
+  <div class="product-card">
+    <a href="airpods.html"><img src="https://m.media-amazon.com/images/I/51OoKCakCfL._AC_SX522_.jpg" alt="AirPods Gen 2"><br>AirPods Gen 2</a>
+  </div>
+  <div class="product-card">
+    <a href="jbl.html"><img src="https://m.media-amazon.com/images/I/61k5c3kVZPL._AC_SX522_.jpg" alt="JBL Flip 6"><br>JBL Flip 6</a>
+  </div>
+  <div class="product-card">
+    <a href="applewatch.html"><img src="https://m.media-amazon.com/images/I/71ZDeLa8hDL._AC_SX522_.jpg" alt="Apple Watch Ultra 2"><br>Apple Watch Ultra 2</a>
+  </div>
+  <div class="product-card">
+    <a href="nike.html"><img src="https://m.media-amazon.com/images/I/71sD6D3A-GL._AC_SX522_.jpg" alt="Nike Elite Bag"><br>Nike Elite Bag</a>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAg8rMH-z6Z4XivTjh-5xUhtxAditPCTcc",
+  authDomain: "half-store.firebaseapp.com",
+  projectId: "half-store",
+  storageBucket: "half-store.firebasestorage.app",
+  messagingSenderId: "478108258191",
+  appId: "1:478108258191:web:47cf56d4a7f4249ef245fa",
+  measurementId: "G-G5PLST39WR"
+};
+
+const app = initializeApp(firebaseConfig);
+getAnalytics(app);
+const auth = getAuth(app);
+const signOutBtn = document.getElementById("signOutBtn");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+
+const searchTargets = {
+  airpods: "airpods.html",
+  "airpods gen 2": "airpods.html",
+  jbl: "jbl.html",
+  "jbl flip 6": "jbl.html",
+  applewatch: "applewatch.html",
+  "apple watch": "applewatch.html",
+  "apple watch ultra 2": "applewatch.html",
+  nike: "nike.html",
+  "nike elite bag": "nike.html"
+};
+
+function runSearch() {
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) return;
+
+  const exact = searchTargets[query];
+  if (exact) {
+    window.location.href = exact;
+    return;
+  }
+
+  const partialKey = Object.keys(searchTargets).find(key => key.includes(query));
+  if (partialKey) {
+    window.location.href = searchTargets[partialKey];
+    return;
+  }
+
+  alert("No matching product found.");
+}
+
+searchBtn.addEventListener("click", runSearch);
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    runSearch();
+  }
+});
+
+signOutBtn.addEventListener("click", () => signOut(auth));
+
+onAuthStateChanged(auth, user => {
+  signOutBtn.style.display = user ? "inline-block" : "none";
+});
+</script>
+</body>
+</html>

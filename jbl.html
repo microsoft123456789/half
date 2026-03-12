@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JBL Flip 6 | half.</title>
+<style>
+body{font-family:Arial;background:#f6f4ff;margin:0;color:#222;}
+.nav{background:#6a0dad;color:white;padding:18px 40px;font-size:22px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;}
+.nav a{color:white;text-decoration:none;}
+.nav button{background:white;color:#6a0dad;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;}
+.nav button:hover{background:#e0d0ff;}
+.nav-controls{display:flex;align-items:center;gap:10px;font-size:16px;}
+.nav-search{display:flex;gap:8px;align-items:center;}
+.nav-search input{padding:6px 10px;border:none;border-radius:6px;min-width:190px;}
+.container{display:flex;gap:60px;padding:60px;align-items:flex-start;flex-wrap:wrap;}
+.image-box{background:white;padding:20px;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
+.main-image{width:350px;max-width:100%;transition:transform .3s;border-radius:10px;}
+.main-image:hover{transform:scale(1.08);}
+.styles{margin-top:20px;display:flex;gap:15px;flex-wrap:wrap;}
+.style{text-align:center;cursor:pointer;font-size:14px;}
+.style img{width:65px;height:65px;object-fit:cover;border-radius:8px;border:2px solid transparent;}
+.style img:hover{border:2px solid #6a0dad;}
+.info{max-width:450px;}
+.title{font-size:34px;color:#6a0dad;}
+.price{font-size:24px;margin:15px 0;}
+button{background:#6a0dad;color:white;border:none;padding:14px 26px;font-size:16px;border-radius:6px;cursor:pointer;}
+button:hover{background:#5b0896;}
+.reviews{margin-top:50px;background:white;padding:25px;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.1);max-width:600px;}
+.review{margin-bottom:15px;}
+.star{color:gold;font-size:20px;cursor:pointer;}
+.star.selected{text-shadow:0 0 3px #6a0dad;}
+textarea{width:100%;min-height:80px;}
+</style>
+</head>
+<body>
+<div class="nav">
+<a href="index.html">half.</a>
+<div class="nav-controls">
+<div class="nav-search">
+<input id="searchInput" type="text" placeholder="Search products">
+<button id="searchBtn">Search</button>
+</div>
+🛒 Cart: <span id="cartCount">0</span>
+<button id="signOutBtn" style="display:none;">Sign Out</button>
+</div>
+</div>
+
+<div class="container">
+<div class="image-box">
+<img id="mainImage" class="main-image" alt="JBL Flip 6">
+<div class="styles" id="styleSelector"></div>
+</div>
+
+<div class="info">
+<div class="title" id="productTitle"></div>
+<div class="price" id="productPrice"></div>
+<p id="productDescription"></p>
+<button id="addToCartBtn">Add to Cart</button>
+
+<div class="reviews">
+<h3>Customer Reviews</h3>
+<div id="reviewList"></div>
+<br>
+<textarea id="reviewText" placeholder="Write your review"></textarea>
+<br><br>
+<div id="stars">
+<span class="star selected" data-value="1">★</span>
+<span class="star selected" data-value="2">★</span>
+<span class="star selected" data-value="3">★</span>
+<span class="star selected" data-value="4">★</span>
+<span class="star selected" data-value="5">★</span>
+</div>
+<br>
+<button id="submitReviewBtn">Submit Review</button>
+</div>
+</div>
+</div>
+
+<script type="module">
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+apiKey: "AIzaSyAg8rMH-z6Z4XivTjh-5xUhtxAditPCTcc",
+authDomain: "half-store.firebaseapp.com",
+projectId: "half-store",
+storageBucket: "half-store.firebasestorage.app",
+messagingSenderId: "478108258191",
+appId: "1:478108258191:web:47cf56d4a7f4249ef245fa",
+measurementId: "G-G5PLST39WR"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const PRODUCT_ID = "jbl_flip_6";
+const productName = "JBL Flip 6";
+const productPrice = "$99.99";
+const productDescription = "Portable Bluetooth speaker with deep bass and all-day battery.";
+const productImages = [{"url": "https://m.media-amazon.com/images/I/61k5c3kVZPL._AC_SX522_.jpg", "label": "Blue"}, {"url": "https://m.media-amazon.com/images/I/61LQ5fS4M-L._AC_SX522_.jpg", "label": "Black"}];
+
+document.getElementById("productTitle").innerText = productName;
+document.getElementById("productPrice").innerText = productPrice;
+document.getElementById("productDescription").innerText = productDescription;
+document.getElementById("mainImage").src = productImages[0].url;
+
+const styleSelector = document.getElementById("styleSelector");
+productImages.forEach(img => {
+  const div = document.createElement("div");
+  div.className = "style";
+  div.innerHTML = `<img src="${img.url}" alt="${img.label}"><div>${img.label}</div>`;
+  div.addEventListener("click", () => {
+    document.getElementById("mainImage").src = img.url;
+  });
+  styleSelector.appendChild(div);
+});
+
+let cart = 0;
+document.getElementById("addToCartBtn").addEventListener("click", () => {
+  cart += 1;
+  document.getElementById("cartCount").innerText = String(cart);
+  alert("Added to cart!");
+});
+
+const signOutBtn = document.getElementById("signOutBtn");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+
+const searchTargets = {
+  airpods: "airpods.html",
+  "airpods gen 2": "airpods.html",
+  jbl: "jbl.html",
+  "jbl flip 6": "jbl.html",
+  applewatch: "applewatch.html",
+  "apple watch": "applewatch.html",
+  "apple watch ultra 2": "applewatch.html",
+  nike: "nike.html",
+  "nike elite bag": "nike.html"
+};
+
+function runSearch() {
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) return;
+
+  const exact = searchTargets[query];
+  if (exact) {
+    window.location.href = exact;
+    return;
+  }
+
+  const partialKey = Object.keys(searchTargets).find(key => key.includes(query));
+  if (partialKey) {
+    window.location.href = searchTargets[partialKey];
+    return;
+  }
+
+  alert("No matching product found.");
+}
+
+searchBtn.addEventListener("click", runSearch);
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    runSearch();
+  }
+});
+
+signOutBtn.addEventListener("click", () => signOut(auth));
+onAuthStateChanged(auth, user => {
+  signOutBtn.style.display = user ? "inline-block" : "none";
+});
+
+let selectedRating = 5;
+document.querySelectorAll(".star").forEach(star => {
+  star.addEventListener("click", () => {
+    selectedRating = parseInt(star.getAttribute("data-value"), 10);
+    document.querySelectorAll(".star").forEach((s, index) => {
+      s.classList.toggle("selected", index < selectedRating);
+    });
+  });
+});
+
+document.getElementById("submitReviewBtn").addEventListener("click", submitReview);
+
+async function submitReview() {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Sign in to submit a review!");
+    window.location.href = "signin.html";
+    return;
+  }
+
+  const text = document.getElementById("reviewText").value.trim();
+  if (!text) {
+    alert("Write a review first!");
+    return;
+  }
+
+  await addDoc(collection(db, `reviews_${PRODUCT_ID}`), {
+    name: user.displayName,
+    email: user.email,
+    review: text,
+    rating: selectedRating,
+    verified: true,
+    timestamp: Date.now()
+  });
+
+  document.getElementById("reviewText").value = "";
+  await loadReviews();
+}
+
+async function loadReviews() {
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+
+  const q = query(collection(db, `reviews_${PRODUCT_ID}`), orderBy("timestamp", "desc"));
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach(reviewDoc => {
+    const data = reviewDoc.data();
+    const starsHtml = "★".repeat(data.rating) + "☆".repeat(5 - data.rating);
+    const verified = data.verified ? ' <span style="color:#6a0dad;font-weight:bold;">(Verified User)</span>' : '';
+
+    const div = document.createElement("div");
+    div.className = "review";
+    div.innerHTML = `<b>${data.name}</b>${verified} — <span style="color:gold">${starsHtml}</span><br>${data.review}`;
+    list.appendChild(div);
+  });
+}
+
+loadReviews();
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In | half.</title>
+<style>
+body{font-family:Arial;background:#f6f4ff;margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}
+.container{background:white;padding:40px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);text-align:center;width:320px;}
+h1{color:#6a0dad;margin-bottom:20px;}
+button{background:#6a0dad;color:white;border:none;padding:12px 24px;font-size:16px;border-radius:6px;cursor:pointer;margin-top:20px;width:100%;}
+button:hover{background:#5b0896;}
+#welcome{margin-top:20px;font-size:16px;color:#333;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Welcome to half.</h1>
+<p>Sign in to leave reviews and track your orders</p>
+<button id="googleSignInBtn">Sign in with Google</button>
+<div id="welcome"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAg8rMH-z6Z4XivTjh-5xUhtxAditPCTcc",
+  authDomain: "half-store.firebaseapp.com",
+  projectId: "half-store",
+  storageBucket: "half-store.firebasestorage.app",
+  messagingSenderId: "478108258191",
+  appId: "1:478108258191:web:47cf56d4a7f4249ef245fa",
+  measurementId: "G-G5PLST39WR"
+};
+
+const app = initializeApp(firebaseConfig);
+
+isAnalyticsSupported().then(supported => {
+  if (supported) {
+    getAnalytics(app);
+  }
+});
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+const googleBtn = document.getElementById("googleSignInBtn");
+const welcomeDiv = document.getElementById("welcome");
+
+googleBtn.addEventListener("click", () => {
+  signInWithPopup(auth, provider)
+    .then(result => {
+      welcomeDiv.innerText = `Hello, ${result.user.displayName}! You are signed in.`;
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1500);
+    })
+    .catch(e => alert(`Sign in failed: ${e.message}`));
+});
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    welcomeDiv.innerText = `Hello, ${user.displayName}! You are signed in.`;
+  }
+});
+</script>
+</body>
+</html>

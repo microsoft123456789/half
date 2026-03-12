@@ -24,7 +24,7 @@ button:hover{background:#5b0896;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAg8rMH-z6Z4XivTjh-5xUhtxAditPCTcc",
@@ -37,7 +37,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-getAnalytics(app);
+
+isAnalyticsSupported().then(supported => {
+  if (supported) {
+    getAnalytics(app);
+  }
+});
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 

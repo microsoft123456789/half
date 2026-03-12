@@ -10,6 +10,9 @@ body{font-family:Arial;background:#f6f4ff;margin:0;color:#222;}
 .nav a{color:white;text-decoration:none;}
 .nav button{background:white;color:#6a0dad;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;}
 .nav button:hover{background:#e0d0ff;}
+.nav-controls{display:flex;align-items:center;gap:10px;font-size:16px;}
+.nav-search{display:flex;gap:8px;align-items:center;}
+.nav-search input{padding:6px 10px;border:none;border-radius:6px;min-width:190px;}
 .container{display:flex;gap:60px;padding:60px;align-items:flex-start;flex-wrap:wrap;}
 .image-box{background:white;padding:20px;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.1);}
 .main-image{width:350px;max-width:100%;transition:transform .3s;border-radius:10px;}
@@ -33,7 +36,11 @@ textarea{width:100%;min-height:80px;}
 <body>
 <div class="nav">
 <a href="index.html">half.</a>
-<div>
+<div class="nav-controls">
+<div class="nav-search">
+<input id="searchInput" type="text" placeholder="Search products">
+<button id="searchBtn">Search</button>
+</div>
 🛒 Cart: <span id="cartCount">0</span>
 <button id="signOutBtn" style="display:none;">Sign Out</button>
 </div>
@@ -73,7 +80,7 @@ textarea{width:100%;min-height:80px;}
 <script type="module">
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
 import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 
@@ -90,7 +97,12 @@ measurementId: "G-G5PLST39WR"
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+isAnalyticsSupported().then(supported => {
+  if (supported) {
+    getAnalytics(app);
+  }
+});
 const db = getFirestore(app);
 const auth = getAuth(app);
 
@@ -124,6 +136,48 @@ document.getElementById("addToCartBtn").addEventListener("click", () => {
 });
 
 const signOutBtn = document.getElementById("signOutBtn");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+
+const searchTargets = {
+  airpods: "airpods.html",
+  "airpods gen 2": "airpods.html",
+  jbl: "jbl.html",
+  "jbl flip 6": "jbl.html",
+  applewatch: "applewatch.html",
+  "apple watch": "applewatch.html",
+  "apple watch ultra 2": "applewatch.html",
+  nike: "nike.html",
+  "nike elite bag": "nike.html"
+};
+
+function runSearch() {
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) return;
+
+  const exact = searchTargets[query];
+  if (exact) {
+    window.location.href = exact;
+    return;
+  }
+
+  const partialKey = Object.keys(searchTargets).find(key => key.includes(query));
+  if (partialKey) {
+    window.location.href = searchTargets[partialKey];
+    return;
+  }
+
+  alert("No matching product found.");
+}
+
+searchBtn.addEventListener("click", runSearch);
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    runSearch();
+  }
+});
+
 signOutBtn.addEventListener("click", () => signOut(auth));
 onAuthStateChanged(auth, user => {
   signOutBtn.style.display = user ? "inline-block" : "none";

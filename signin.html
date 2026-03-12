@@ -5,19 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In | half.</title>
 <style>
-body{font-family:Arial;background:#f6f4ff;margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}
-.container{background:white;padding:40px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);text-align:center;width:320px;}
-h1{color:#6a0dad;margin-bottom:20px;}
-button{background:#6a0dad;color:white;border:none;padding:12px 24px;font-size:16px;border-radius:6px;cursor:pointer;margin-top:20px;width:100%;}
-button:hover{background:#5b0896;}
-#welcome{margin-top:20px;font-size:16px;color:#333;}
+body{font-family:Arial;background:linear-gradient(135deg,#f6f4ff,#ece7ff);margin:0;display:flex;justify-content:center;align-items:center;height:100vh;color:#222;}
+.container{background:white;padding:34px;border-radius:14px;box-shadow:0 14px 36px rgba(69,28,126,0.16);width:360px;}
+h1{color:#6a0dad;margin:0 0 10px 0;font-size:30px;}
+.subtitle{margin:0 0 24px 0;color:#666;font-size:14px;}
+.field{margin-bottom:14px;}
+label{display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:6px;}
+input{width:100%;padding:11px;border:1px solid #d8cfff;border-radius:8px;font-size:14px;box-sizing:border-box;}
+input:focus{outline:none;border-color:#6a0dad;box-shadow:0 0 0 2px rgba(106,13,173,.15);}
+.primary-btn,.google-btn{border:none;padding:12px 16px;font-size:15px;border-radius:8px;cursor:pointer;width:100%;font-weight:bold;}
+.primary-btn{background:#6a0dad;color:white;margin-top:4px;}
+.primary-btn:hover{background:#5b0896;}
+.divider{text-align:center;color:#999;font-size:12px;margin:16px 0;position:relative;}
+.divider:before,.divider:after{content:"";position:absolute;top:50%;width:38%;height:1px;background:#ece3ff;}
+.divider:before{left:0;}
+.divider:after{right:0;}
+.google-btn{background:#fff;color:#6a0dad;border:1px solid #cbb6f3;}
+.google-btn:hover{background:#f8f3ff;}
+.signup{margin-top:16px;text-align:center;font-size:13px;color:#666;}
+.signup a{color:#6a0dad;text-decoration:none;font-weight:bold;}
+.signup a:hover{text-decoration:underline;}
+#welcome{margin-top:14px;font-size:14px;color:#333;text-align:center;min-height:18px;}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>Welcome to half.</h1>
-<p>Sign in to leave reviews and track your orders</p>
-<button id="googleSignInBtn">Sign in with Google</button>
+<h1>Sign in</h1>
+<p class="subtitle">Welcome back to half. Enter your account details to continue.</p>
+
+<div class="field">
+<label for="username">User</label>
+<input id="username" type="text" placeholder="Enter your username or email">
+</div>
+
+<div class="field">
+<label for="password">Password</label>
+<input id="password" type="password" placeholder="Enter your password">
+</div>
+
+<button id="emailSignInBtn" class="primary-btn">Sign In</button>
+
+<div class="divider">or</div>
+<button id="googleSignInBtn" class="google-btn">Sign in with Google</button>
+
+<p class="signup">Don't have an account? <a href="#" id="signUpLink">Click here to sign up</a></p>
 <div id="welcome"></div>
 </div>
 
@@ -43,11 +74,23 @@ isAnalyticsSupported().then(supported => {
     getAnalytics(app);
   }
 });
+
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+const emailSignInBtn = document.getElementById("emailSignInBtn");
 const googleBtn = document.getElementById("googleSignInBtn");
+const signUpLink = document.getElementById("signUpLink");
 const welcomeDiv = document.getElementById("welcome");
+
+emailSignInBtn.addEventListener("click", () => {
+  alert("Email/password sign-in is not enabled yet. Please use Sign in with Google.");
+});
+
+signUpLink.addEventListener("click", event => {
+  event.preventDefault();
+  alert("Sign-up flow coming soon. Please use Sign in with Google for now.");
+});
 
 googleBtn.addEventListener("click", () => {
   signInWithPopup(auth, provider)

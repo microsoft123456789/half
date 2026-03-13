@@ -33,20 +33,22 @@ input:focus{outline:none;border-color:#6a0dad;box-shadow:0 0 0 2px rgba(106,13,1
 <h1>Sign in</h1>
 <p class="subtitle">Welcome back to half. Enter your account details to continue.</p>
 
-<div class="field">
-<label for="username">User</label>
-<input id="username" type="text" placeholder="Enter your username or email">
-</div>
+<form id="signinForm" autocomplete="on">
+  <div class="field">
+  <label for="username">User</label>
+  <input id="username" name="username" type="email" autocomplete="username email" placeholder="Enter your username or email" required>
+  </div>
 
-<div class="field">
-<label for="password">Password</label>
-<input id="password" type="password" placeholder="Enter your password">
-</div>
+  <div class="field">
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+  </div>
 
-<button id="emailSignInBtn" class="primary-btn">Sign In</button>
+  <button type="submit" id="emailSignInBtn" class="primary-btn">Sign In</button>
+</form>
 
 <div class="divider">or</div>
-<button id="googleSignInBtn" class="google-btn">Sign in with Google</button>
+<button id="googleSignInBtn" class="google-btn" type="button">Sign in with Google</button>
 
 <p class="signup">Don't have an account? <a href="signup.html" id="signUpLink">Click here to sign up</a></p>
 <div id="welcome"></div>
@@ -78,12 +80,27 @@ isAnalyticsSupported().then(supported => {
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-const emailSignInBtn = document.getElementById("emailSignInBtn");
+const signInForm = document.getElementById("signinForm");
 const googleBtn = document.getElementById("googleSignInBtn");
 const welcomeDiv = document.getElementById("welcome");
 
-emailSignInBtn.addEventListener("click", () => {
-  alert("Email/password sign-in is not enabled yet. Please use Sign in with Google.");
+async function saveCredentialFromForm(form) {
+  if (!("PasswordCredential" in window) || !("credentials" in navigator)) {
+    return;
+  }
+
+  try {
+    const credential = new PasswordCredential(form);
+    await navigator.credentials.store(credential);
+  } catch (_error) {
+    // Ignore if browser blocks storage.
+  }
+}
+
+signInForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  await saveCredentialFromForm(signInForm);
+  welcomeDiv.innerText = "Saved for Password Manager. Email/password sign-in is coming soon. Use Google sign-in for now.";
 });
 
 googleBtn.addEventListener("click", () => {

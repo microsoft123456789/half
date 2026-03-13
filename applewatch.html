@@ -139,35 +139,10 @@ const signOutBtn = document.getElementById("signOutBtn");
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 
-const searchTargets = {
-  airpods: "airpods.html",
-  "airpods gen 2": "airpods.html",
-  jbl: "jbl.html",
-  "jbl flip 6": "jbl.html",
-  applewatch: "applewatch.html",
-  "apple watch": "applewatch.html",
-  "apple watch ultra 2": "applewatch.html",
-  nike: "nike.html",
-  "nike elite bag": "nike.html"
-};
-
 function runSearch() {
-  const query = searchInput.value.trim().toLowerCase();
+  const query = searchInput.value.trim();
   if (!query) return;
-
-  const exact = searchTargets[query];
-  if (exact) {
-    window.location.href = exact;
-    return;
-  }
-
-  const partialKey = Object.keys(searchTargets).find(key => key.includes(query));
-  if (partialKey) {
-    window.location.href = searchTargets[partialKey];
-    return;
-  }
-
-  alert("No matching product found.");
+  window.location.href = `search.html?q=${encodeURIComponent(query)}`;
 }
 
 searchBtn.addEventListener("click", runSearch);

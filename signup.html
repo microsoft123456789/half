@@ -33,30 +33,32 @@ input:focus{outline:none;border-color:#6a0dad;box-shadow:0 0 0 2px rgba(106,13,1
 <h1>Sign up</h1>
 <p class="subtitle">Create your half. account to review products and track orders.</p>
 
-<div class="field">
-<label for="fullName">Full name</label>
-<input id="fullName" type="text" placeholder="Enter your full name">
-</div>
+<form id="signupForm" autocomplete="on">
+  <div class="field">
+  <label for="fullName">Full name</label>
+  <input id="fullName" name="name" type="text" autocomplete="name" placeholder="Enter your full name" required>
+  </div>
 
-<div class="field">
-<label for="email">Email</label>
-<input id="email" type="email" placeholder="Enter your email">
-</div>
+  <div class="field">
+  <label for="email">Email</label>
+  <input id="email" name="username" type="email" autocomplete="username email" placeholder="Enter your email" required>
+  </div>
 
-<div class="field">
-<label for="password">Password</label>
-<input id="password" type="password" placeholder="Create a password">
-</div>
+  <div class="field">
+  <label for="password">Password</label>
+  <input id="password" name="new-password" type="password" autocomplete="new-password" placeholder="Create a password" required>
+  </div>
 
-<div class="field">
-<label for="confirmPassword">Confirm password</label>
-<input id="confirmPassword" type="password" placeholder="Re-enter your password">
-</div>
+  <div class="field">
+  <label for="confirmPassword">Confirm password</label>
+  <input id="confirmPassword" name="confirm-password" type="password" autocomplete="new-password" placeholder="Re-enter your password" required>
+  </div>
 
-<button id="createAccountBtn" class="primary-btn">Create Account</button>
+  <button type="submit" id="createAccountBtn" class="primary-btn">Create Account</button>
+</form>
 
 <div class="divider">or</div>
-<button id="googleSignUpBtn" class="google-btn">Sign up with Google</button>
+<button id="googleSignUpBtn" class="google-btn" type="button">Sign up with Google</button>
 
 <p class="signin">Already have an account? <a href="signin.html">Click here to sign in</a></p>
 <div id="message"></div>
@@ -64,7 +66,7 @@ input:focus{outline:none;border-color:#6a0dad;box-shadow:0 0 0 2px rgba(106,13,1
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
 
 const firebaseConfig = {
@@ -87,26 +89,81 @@ isAnalyticsSupported().then(supported => {
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-const createAccountBtn = document.getElementById("createAccountBtn");
-const googleSignUpBtn = document.getElementById("googleSignUpBtn");
-const message = document.getElementById("message");
+provider.setCustomParameters({ prompt: "select_account" });
 
-createAccountBtn.addEventListener("click", () => {
-  message.innerText = "Email/password sign-up is coming soon. Please use Google sign-up for now.";
-});
+function shouldFallbackToRedirect(error) {
+  const fallbackCodes = new Set([
+    "auth/popup-blocked",
+    "auth/popup-closed-by-user",
+    "auth/cancelled-popup-request",
+    "auth/operation-not-supported-in-this-environment"
+  ]);
+  return fallbackCodes.has(error?.code);
+}
 
-googleSignUpBtn.addEventListener("click", () => {
-  signInWithPopup(auth, provider)
-    .then(result => {
+async function handleGoogleSignup() {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    message.innerText = `Welcome, ${result.user.displayName}! Your account is ready.`;
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 1500);
+  } catch (e) {
+    if (shouldFallbackToRedirect(e)) {
+      message.innerText = "Popup blocked. Redirecting to Google sign-up...";
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+    message.innerText = `Sign up failed: ${e.message}`;
+  }
+}
+
+getRedirectResult(auth)
+  .then(result => {
+    if (result?.user) {
       message.innerText = `Welcome, ${result.user.displayName}! Your account is ready.`;
       setTimeout(() => {
         window.location.href = "index.html";
       }, 1500);
-    })
-    .catch(e => {
-      message.innerText = `Sign up failed: ${e.message}`;
-    });
+    }
+  })
+  .catch(e => {
+    message.innerText = `Sign up failed: ${e.message}`;
+  });
+
+const signupForm = document.getElementById("signupForm");
+const googleSignUpBtn = document.getElementById("googleSignUpBtn");
+const message = document.getElementById("message");
+
+async function saveCredentialFromForm(form) {
+  if (!("PasswordCredential" in window) || !("credentials" in navigator)) {
+    return;
+  }
+
+  try {
+    const credential = new PasswordCredential(form);
+    await navigator.credentials.store(credential);
+  } catch (_error) {
+    // Ignore if browser blocks storage.
+  }
+}
+
+signupForm.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+
+  if (password !== confirmPassword) {
+    message.innerText = "Passwords do not match.";
+    return;
+  }
+
+  await saveCredentialFromForm(signupForm);
+  message.innerText = "Saved for Password Manager. Account creation with email/password is coming soon.";
 });
+
+googleSignUpBtn.addEventListener("click", handleGoogleSignup);
 </script>
 </body>
 </html>

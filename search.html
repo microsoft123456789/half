@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Results | half.</title>
+<style>
+body{font-family:Arial;background:#f6f4ff;margin:0;color:#222;}
+.nav{background:#6a0dad;color:white;padding:18px 40px;font-size:22px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;}
+.nav a{color:white;text-decoration:none;}
+.nav-search{display:flex;gap:8px;align-items:center;}
+.nav-search input{padding:8px 10px;border:none;border-radius:6px;min-width:220px;}
+.nav-search button{background:white;color:#6a0dad;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:bold;}
+.nav-search button:hover{background:#e0d0ff;}
+.page{padding:30px 40px;}
+#searchSummary{margin-top:0;}
+.result-grid{display:flex;gap:24px;flex-wrap:wrap;}
+.result-card{width:220px;background:white;padding:16px;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.1);text-align:center;}
+.result-card img{width:100%;height:170px;object-fit:cover;border-radius:8px;}
+.result-card a{text-decoration:none;color:#222;font-weight:bold;display:block;margin-top:10px;}
+.result-card a:hover{color:#6a0dad;}
+.muted{color:#666;}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="index.html">half.</a>
+  <div class="nav-search">
+    <input id="searchInput" type="text" placeholder="Search products">
+    <button id="searchBtn">Search</button>
+  </div>
+</div>
+
+<div class="page">
+  <h2 id="searchSummary">Search Results</h2>
+  <p id="resultCount" class="muted"></p>
+  <div id="results" class="result-grid"></div>
+</div>
+
+<script>
+const products = [
+  { name: "AirPods Gen 2", page: "airpods.html", image: "https://m.media-amazon.com/images/I/51OoKCakCfL._AC_SX522_.jpg", keywords: ["airpods", "apple", "earbuds", "gen 2"] },
+  { name: "JBL Flip 6", page: "jbl.html", image: "https://m.media-amazon.com/images/I/61k5c3kVZPL._AC_SX522_.jpg", keywords: ["jbl", "speaker", "bluetooth", "flip 6"] },
+  { name: "Apple Watch Ultra 2", page: "applewatch.html", image: "https://m.media-amazon.com/images/I/71ZDeLa8hDL._AC_SX522_.jpg", keywords: ["apple watch", "watch", "ultra 2", "smartwatch"] },
+  { name: "Nike Elite Bag", page: "nike.html", image: "https://m.media-amazon.com/images/I/71sD6D3A-GL._AC_SX522_.jpg", keywords: ["nike", "bag", "backpack", "elite"] }
+];
+
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const resultsContainer = document.getElementById("results");
+const resultCount = document.getElementById("resultCount");
+const searchSummary = document.getElementById("searchSummary");
+
+function searchProducts(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    return products;
+  }
+
+  return products.filter(product => {
+    if (product.name.toLowerCase().includes(q)) return true;
+    return product.keywords.some(keyword => keyword.includes(q));
+  });
+}
+
+function renderResults(query) {
+  const matches = searchProducts(query);
+  resultsContainer.innerHTML = "";
+
+  if (query) {
+    searchSummary.innerText = `Search Results for \"${query}\"`;
+  } else {
+    searchSummary.innerText = "Search Results";
+  }
+
+  resultCount.innerText = `${matches.length} product${matches.length === 1 ? "" : "s"} found`;
+
+  if (!matches.length) {
+    resultsContainer.innerHTML = '<p class="muted">No matching products found. Try another search term.</p>';
+    return;
+  }
+
+  matches.forEach(product => {
+    const card = document.createElement("div");
+    card.className = "result-card";
+    card.innerHTML = `
+      <a href="${product.page}">
+        <img src="${product.image}" alt="${product.name}">
+        ${product.name}
+      </a>
+    `;
+    resultsContainer.appendChild(card);
+  });
+}
+
+function runSearch() {
+  const query = searchInput.value.trim();
+  const url = new URL(window.location.href);
+  url.searchParams.set("q", query);
+  window.history.replaceState({}, "", url);
+  renderResults(query);
+}
+
+searchBtn.addEventListener("click", runSearch);
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    runSearch();
+  }
+});
+
+const params = new URLSearchParams(window.location.search);
+const initialQuery = params.get("q") || "";
+searchInput.value = initialQuery;
+renderResults(initialQuery);
+</script>
+</body>
+</html>

@@ -56,7 +56,7 @@ input:focus{outline:none;border-color:#6a0dad;box-shadow:0 0 0 2px rgba(106,13,1
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
 
 const firebaseConfig = {
@@ -79,6 +79,48 @@ isAnalyticsSupported().then(supported => {
 
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+
+provider.setCustomParameters({ prompt: "select_account" });
+
+function shouldFallbackToRedirect(error) {
+  const fallbackCodes = new Set([
+    "auth/popup-blocked",
+    "auth/popup-closed-by-user",
+    "auth/cancelled-popup-request",
+    "auth/operation-not-supported-in-this-environment"
+  ]);
+  return fallbackCodes.has(error?.code);
+}
+
+async function handleGoogleAuth() {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    welcomeDiv.innerText = `Hello, ${result.user.displayName}! You are signed in.`;
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 1500);
+  } catch (e) {
+    if (shouldFallbackToRedirect(e)) {
+      welcomeDiv.innerText = "Popup blocked. Redirecting to Google sign-in...";
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+    welcomeDiv.innerText = `Sign in failed: ${e.message}`;
+  }
+}
+
+getRedirectResult(auth)
+  .then(result => {
+    if (result?.user) {
+      welcomeDiv.innerText = `Hello, ${result.user.displayName}! You are signed in.`;
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1500);
+    }
+  })
+  .catch(e => {
+    welcomeDiv.innerText = `Sign in failed: ${e.message}`;
+  });
 
 const signInForm = document.getElementById("signinForm");
 const googleBtn = document.getElementById("googleSignInBtn");
@@ -103,16 +145,7 @@ signInForm.addEventListener("submit", async event => {
   welcomeDiv.innerText = "Saved for Password Manager. Email/password sign-in is coming soon. Use Google sign-in for now.";
 });
 
-googleBtn.addEventListener("click", () => {
-  signInWithPopup(auth, provider)
-    .then(result => {
-      welcomeDiv.innerText = `Hello, ${result.user.displayName}! You are signed in.`;
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1500);
-    })
-    .catch(e => alert(`Sign in failed: ${e.message}`));
-});
+googleBtn.addEventListener("click", handleGoogleAuth);
 
 onAuthStateChanged(auth, user => {
   if (user) {

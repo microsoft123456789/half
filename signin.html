@@ -48,7 +48,7 @@ input:focus{outline:none;border-color:#6a0dad;box-shadow:0 0 0 2px rgba(106,13,1
 <div class="divider">or</div>
 <button id="googleSignInBtn" class="google-btn">Sign in with Google</button>
 
-<p class="signup">Don't have an account? <a href="#" id="signUpLink">Click here to sign up</a></p>
+<p class="signup">Don't have an account? <a href="signup.html" id="signUpLink">Click here to sign up</a></p>
 <div id="welcome"></div>
 </div>
 
@@ -80,16 +80,10 @@ const provider = new GoogleAuthProvider();
 
 const emailSignInBtn = document.getElementById("emailSignInBtn");
 const googleBtn = document.getElementById("googleSignInBtn");
-const signUpLink = document.getElementById("signUpLink");
 const welcomeDiv = document.getElementById("welcome");
 
 emailSignInBtn.addEventListener("click", () => {
   alert("Email/password sign-in is not enabled yet. Please use Sign in with Google.");
-});
-
-signUpLink.addEventListener("click", event => {
-  event.preventDefault();
-  alert("Sign-up flow coming soon. Please use Sign in with Google for now.");
 });
 
 googleBtn.addEventListener("click", () => {

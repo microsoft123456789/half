@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up | half.</title>
+<style>
+body{font-family:Arial;background:linear-gradient(135deg,#f6f4ff,#ece7ff);margin:0;display:flex;justify-content:center;align-items:center;height:100vh;color:#222;}
+.container{background:white;padding:34px;border-radius:14px;box-shadow:0 14px 36px rgba(69,28,126,0.16);width:380px;}
+h1{color:#6a0dad;margin:0 0 10px 0;font-size:30px;}
+.subtitle{margin:0 0 24px 0;color:#666;font-size:14px;}
+.field{margin-bottom:14px;}
+label{display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:6px;}
+input{width:100%;padding:11px;border:1px solid #d8cfff;border-radius:8px;font-size:14px;box-sizing:border-box;}
+input:focus{outline:none;border-color:#6a0dad;box-shadow:0 0 0 2px rgba(106,13,173,.15);}
+.primary-btn,.google-btn{border:none;padding:12px 16px;font-size:15px;border-radius:8px;cursor:pointer;width:100%;font-weight:bold;}
+.primary-btn{background:#6a0dad;color:white;margin-top:4px;}
+.primary-btn:hover{background:#5b0896;}
+.divider{text-align:center;color:#999;font-size:12px;margin:16px 0;position:relative;}
+.divider:before,.divider:after{content:"";position:absolute;top:50%;width:38%;height:1px;background:#ece3ff;}
+.divider:before{left:0;}
+.divider:after{right:0;}
+.google-btn{background:#fff;color:#6a0dad;border:1px solid #cbb6f3;}
+.google-btn:hover{background:#f8f3ff;}
+.signin{margin-top:16px;text-align:center;font-size:13px;color:#666;}
+.signin a{color:#6a0dad;text-decoration:none;font-weight:bold;}
+.signin a:hover{text-decoration:underline;}
+#message{margin-top:14px;font-size:14px;color:#333;text-align:center;min-height:18px;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Sign up</h1>
+<p class="subtitle">Create your half. account to review products and track orders.</p>
+
+<div class="field">
+<label for="fullName">Full name</label>
+<input id="fullName" type="text" placeholder="Enter your full name">
+</div>
+
+<div class="field">
+<label for="email">Email</label>
+<input id="email" type="email" placeholder="Enter your email">
+</div>
+
+<div class="field">
+<label for="password">Password</label>
+<input id="password" type="password" placeholder="Create a password">
+</div>
+
+<div class="field">
+<label for="confirmPassword">Confirm password</label>
+<input id="confirmPassword" type="password" placeholder="Re-enter your password">
+</div>
+
+<button id="createAccountBtn" class="primary-btn">Create Account</button>
+
+<div class="divider">or</div>
+<button id="googleSignUpBtn" class="google-btn">Sign up with Google</button>
+
+<p class="signin">Already have an account? <a href="signin.html">Click here to sign in</a></p>
+<div id="message"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getAnalytics, isSupported as isAnalyticsSupported } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAg8rMH-z6Z4XivTjh-5xUhtxAditPCTcc",
+  authDomain: "half-store.firebaseapp.com",
+  projectId: "half-store",
+  storageBucket: "half-store.firebasestorage.app",
+  messagingSenderId: "478108258191",
+  appId: "1:478108258191:web:47cf56d4a7f4249ef245fa",
+  measurementId: "G-G5PLST39WR"
+};
+
+const app = initializeApp(firebaseConfig);
+isAnalyticsSupported().then(supported => {
+  if (supported) {
+    getAnalytics(app);
+  }
+});
+
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+const createAccountBtn = document.getElementById("createAccountBtn");
+const googleSignUpBtn = document.getElementById("googleSignUpBtn");
+const message = document.getElementById("message");
+
+createAccountBtn.addEventListener("click", () => {
+  message.innerText = "Email/password sign-up is coming soon. Please use Google sign-up for now.";
+});
+
+googleSignUpBtn.addEventListener("click", () => {
+  signInWithPopup(auth, provider)
+    .then(result => {
+      message.innerText = `Welcome, ${result.user.displayName}! Your account is ready.`;
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1500);
+    })
+    .catch(e => {
+      message.innerText = `Sign up failed: ${e.message}`;
+    });
+});
+</script>
+</body>
+</html>
